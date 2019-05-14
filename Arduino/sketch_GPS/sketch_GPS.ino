@@ -1,0 +1,24 @@
+#include <TinyGPS.h>
+#include <SoftwareSerial.h>
+
+#define RXPin 4
+#define TXPin 3
+#define GPSBaud 9600
+
+// The serial connection to the GPS device
+SoftwareSerial ss(RXPin, TXPin);
+TinyGPS gps;
+
+void setup()
+{
+  Serial.begin(115200);
+  ss.begin(GPSBaud);
+}
+
+void loop()
+{
+  // Output raw GPS data to the serial monitor
+  while (ss.available() > 0){
+    Serial.write(ss.read());
+  }
+}

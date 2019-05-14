@@ -1,0 +1,30 @@
+Definicoes gerais:
+ - Macros:
+	err_t
+	NO_ERR
+	INDEX_ERR
+	READ_ERR
+	INV_DATA_ERR
+	TRANSM_ERR
+	(BMP_I2C_DEFAULT_ADDR)
+Objetos:
+ - GPS
+	- Instance Constants:
+		- GPS_TX
+		- GPS_RX
+		- GPS_EN
+		- GPS_BAUD
+		- GPS_BUFF_LEN
+ - (NMEA)
+	- Macros:
+		- NMEA_IGNR_NULL
+		- Instance Constants:
+		- NMEA_DIV_LEN
+ - BMP
+	- Instance Constants:
+		-
+	
+ - EEPROM
+ - (Project)
+ - (SerialDebugger)
+ 
