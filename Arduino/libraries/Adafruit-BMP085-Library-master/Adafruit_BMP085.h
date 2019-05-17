@@ -26,6 +26,7 @@
 #include "Wire.h"
 
 #define BMP085_DEBUG 0
+#define DEBUG_MODE
 
 #define BMP085_I2CADDR 0x77
 

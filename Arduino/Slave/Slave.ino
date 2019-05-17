@@ -8,21 +8,11 @@
 // ARDUINO INCLUDES
 #include <zenith.h>                               // main library
 
-// TRASMISSION STATE IDs
-// transmissionState defines what information the slave will send to master
-// must set transmissionState before every read call on the slave
-#define BMP_PRES_TSID   0                         // transmissionState value for sending BMP pression to master
-#define BMP_TEMP_TSID   1                         // transmissionState value for sending BMP temperature to master
-#define BMP_ALT_TSID    2                         // transmissionState value for sending BMP altitude to master
-#define GPS_TIME_TSID   3                         // transmissionState value for sending GPS time to master
-#define GPS_LAT_TSID    4                         // transmissionState value for sending GPS latitude to master
-#define GPS_NS_TSID     5                         // transmissionState value for sending GPS North/South to master
-#define GPS_LONG_TSID   6                         // transmissionState value for sending GPS longitude to master
-#define GPS_EW_TSID     7                         // transmissionState value for sending GPS East/West to master
-#define GPS_QUAL_TSID   8                         // transmissionState value for sending GPS quality to master
-#define GPS_SAT_TSID    9                         // transmissionState value for sending GPS satellites number to master
-#define GPS_HDOP_TSID   10                        // transmissionState value for sending GPS horizontal precision to master
-#define GPS_AGE_TSID    11                        // transmissionState value for sending GPS information age to master
+//#define PROJ_GPS
+#define PROJ_BMP
+
+#define SLAVE_I2C_ADD   8                         // Slave address in I2C bus
+
 
 
 /*******************************************************************************
@@ -34,10 +24,21 @@ byte transmissionState=0;                         // variable that controls whic
 /*******************************************************************************
                                     SLAVE
 *******************************************************************************/
+#ifdef PROJ_BMP
+  zBMP bmp;
+#endif
+#ifdef PROJ_GPS1
+  zGPS gps1(10, 11, 12, 9600, 82);
+#endif
+#ifdef PROJ_GPS2
+  zGPS gps2(3, 4, 9600, 82);
+#endif
+
 void setup() {                         
 
   #ifdef DEBUG_MODE
-  Serial.begin(DEBUG_BAUD);
+    Serial.begin(DEBUG_BAUD);
+    Serial.println("Debug Mode");
   #endif
   
   // I2C SETUP
@@ -47,15 +48,31 @@ void setup() {
 
   // BMP INITIALIZATION
   #ifdef PROJ_BMP
-  BMP_init();
+    bmp.init();
   #endif
   // GPS INITIALIZATION
-  #ifdef PROJ_GPS
-  GPS_init();
+  #ifdef PROJ_GPS1
+    gps1.init();
+  #endif
+  #ifdef PROJ_GPS2
+    gps1.init();
   #endif
 }
 
 void loop() {
+  #ifdef PROJ_BMP
+    bmp.read();
+  #endif
+  #ifdef PROJ_GPS1
+    gps1.read();
+  #endif
+  #ifdef PROJ_GPS2
+    gps2.read();
+  #endif
+  #ifdef DEBUG_MODE
+    delay(DEBUG_DELAY);
+  #endif
+  /**
   BMP_read();
 
   BMP_print_Info();
@@ -66,7 +83,7 @@ void loop() {
     //Serial.print(":F");
     GPS_Process_NMEA_Line();
   }
-
+  */
 }
 
 /*******************************************************************************
@@ -75,17 +92,89 @@ void loop() {
 void requestEvent() {
   // function that executes whenever data is requested by master
   // this function is registered as an event, see setup()
+
+  #ifdef DEBUG_MODE
+    Serial.print("Trasnmission state: ");Serial.println(transmissionState);
+  #endif
+  
   switch(transmissionState){
     case BMP_PRES_TSID:
-      i2c_send(BMP_pressure);
+      i2c_send(bmp.raw_pressure(), 4);
     break;
     case BMP_TEMP_TSID:
-      i2c_send(BMP_temperature);
+      i2c_send(bmp.raw_temperature(), 2);
     break;
-    case BMP_ALT_TSID:
-      i2c_send(BMP_Altitude);
+    case BMP_CAL_TSID:
+      i2c_send(bmp.get_ac1(), 2);
+      i2c_send(bmp.get_ac2(), 2);
+      i2c_send(bmp.get_ac3(), 2);
+      i2c_send(bmp.get_ac4(), 2);
+      i2c_send(bmp.get_ac5(), 2);
+      i2c_send(bmp.get_ac6(), 2);
+      i2c_send(bmp.get_b1(), 2);
+      i2c_send(bmp.get_b2(), 2);
+      i2c_send(bmp.get_mb(), 2);
+      i2c_send(bmp.get_mc(), 2);
+      i2c_send(bmp.get_md(), 2);
     break;
+    //case BMP_ALT_TSID:
+      //i2c_send(BMP_Altitude);
+    
+    
   }
+}
+
+//void i2c_send(int32_t v);
+void i2c_send(int32_t v, int num_bytes){
+  // function for sending a 32-bit integer in the I2C bus
+  // only a 8-bit char can be send in the I2C bus at a time
+  // the integer bytes are sended from the msb to the lsb
+  byte i2c_send;
+
+  #ifdef DEBUG_MODE
+    Serial.print("Sending ");Serial.print(num_bytes, DEC);Serial.print(" bytes value: ");Serial.println(v, DEC);
+    Serial.print("Binary form value: ");Serial.println(v, BIN);
+    Serial.print("Bytes sended: ");
+  #endif
+  
+  swap_bytes(&v, num_bytes);
+  for(int i = 0; i < num_bytes; i++){
+    i2c_send = v;
+    Wire.write(i2c_send);
+    v = v >> 8;
+    #ifdef DEBUG_MODE
+      Serial.print(i2c_send, BIN);Serial.print(" ");
+    #endif
+  }
+  #ifdef DEBUG_MODE
+    Serial.println(" ");Serial.println(" ");
+  #endif
+}
+
+void i2c_send32(int32_t v){
+  // function for sending a 32-bit integer in the I2C bus
+  // only a 8-bit char can be send in the I2C bus at a time
+  // the integer bytes are sended from the msb to the lsb
+  byte i2c_send;
+
+  #ifdef DEBUG_MODE
+    Serial.print("Sending 32 bits value: ");Serial.println(v, DEC);
+    Serial.print("Binary form value: ");Serial.println(v, BIN);
+    Serial.print("Bytes sended: ");
+  #endif
+  
+  v = swap_bytes(v);
+  for(int i = 0; i < 4; i++){
+    i2c_send = v;
+    Wire.write(i2c_send);
+    v = v >> 8;
+    #ifdef DEBUG_MODE
+      Serial.print(i2c_send, BIN);Serial.print(" ");
+    #endif
+  }
+  #ifdef DEBUG_MODE
+    Serial.println(" ");Serial.println(" ");
+  #endif
 }
 
 void receiveEvent(int howMany) {

@@ -59,7 +59,7 @@ void CheckGPS()
   int inByte;
   while (gpsSerial.available() > 0){
     inByte = gpsSerial.read();
-    //Serial.write(inByte);                         // Output raw NMEA string from GPS. Use for debugging
+    Serial.write(inByte);                         // Output raw NMEA string from GPS. Use for debugging
 
     if ((inByte =='$') || (GPSBufferLength >= 80))
       GPSBufferLength = 0;

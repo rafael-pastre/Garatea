@@ -120,6 +120,23 @@ int32_t Adafruit_BMP085::readPressure(void) {
   UT = readRawTemperature();
   UP = readRawPressure();
 
+#ifdef DEBUG_MODE
+  Serial.print("UT: ");Serial.println(UT);
+  Serial.print("UP: ");Serial.println(UP);
+  Serial.print("Oversampling: ");Serial.println(oversampling);
+  Serial.print("a1: ");Serial.print(ac1);
+  Serial.print(" a2: ");Serial.print(ac2);
+  Serial.print(" a3: ");Serial.print(ac3);
+  Serial.print(" a4: ");Serial.print(ac4);
+  Serial.print(" a5: ");Serial.print(ac5);
+  Serial.print(" a6: ");Serial.println(ac6);
+  Serial.print("b1: ");Serial.print(b1);
+  Serial.print(" b2: ");Serial.println(b2);
+  Serial.print("mb: ");Serial.print(mb);
+  Serial.print(" mc: ");Serial.print(mc);
+  Serial.print(" md: ");Serial.println(md);
+  
+#endif
 #if BMP085_DEBUG == 1
   // use datasheet numbers!
   UT = 27898;
@@ -139,7 +156,7 @@ int32_t Adafruit_BMP085::readPressure(void) {
 
   B5 = computeB5(UT);
 
-#if BMP085_DEBUG == 1
+#ifdef DEBUG_MODE
   Serial.print("X1 = "); Serial.println(X1);
   Serial.print("X2 = "); Serial.println(X2);
   Serial.print("B5 = "); Serial.println(B5);
@@ -152,7 +169,7 @@ int32_t Adafruit_BMP085::readPressure(void) {
   X3 = X1 + X2;
   B3 = ((((int32_t)ac1*4 + X3) << oversampling) + 2) / 4;
 
-#if BMP085_DEBUG == 1
+#ifdef DEBUG_MODE
   Serial.print("B6 = "); Serial.println(B6);
   Serial.print("X1 = "); Serial.println(X1);
   Serial.print("X2 = "); Serial.println(X2);
@@ -165,7 +182,7 @@ int32_t Adafruit_BMP085::readPressure(void) {
   B4 = ((uint32_t)ac4 * (uint32_t)(X3 + 32768)) >> 15;
   B7 = ((uint32_t)UP - B3) * (uint32_t)( 50000UL >> oversampling );
 
-#if BMP085_DEBUG == 1
+#ifdef DEBUG_MODE
   Serial.print("X1 = "); Serial.println(X1);
   Serial.print("X2 = "); Serial.println(X2);
   Serial.print("B4 = "); Serial.println(B4);
@@ -181,14 +198,14 @@ int32_t Adafruit_BMP085::readPressure(void) {
   X1 = (X1 * 3038) >> 16;
   X2 = (-7357 * p) >> 16;
 
-#if BMP085_DEBUG == 1
+#ifdef DEBUG_MODE
   Serial.print("p = "); Serial.println(p);
   Serial.print("X1 = "); Serial.println(X1);
   Serial.print("X2 = "); Serial.println(X2);
 #endif
 
   p = p + ((X1 + X2 + (int32_t)3791)>>4);
-#if BMP085_DEBUG == 1
+#ifdef DEBUG_MODE
   Serial.print("p = "); Serial.println(p);
 #endif
   return p;

@@ -1,30 +1,64 @@
 #include "zGPS.h"
 
-// GPS GLOBAL DATA VARIABLES
-SoftwareSerial gpsSerial(GPS_TX, GPS_RX);         // defines serial(UART) communication with GPS
-int32_t GPS_hour=0, GPS_min=0, GPS_sec=0;         // time
-int32_t GPS_lat_int=0, GPS_lat_frac=0;            // latitude
-char    GPS_NS;                                   // north/south
-int32_t GPS_long_int=0, GPS_long_frac=0;          // longitude
-char    GPS_EW;                                   // east/west
-char    GPS_quality='0';                          // quality
-int32_t GPS_Satellites=0;                         // number of satelites
-int32_t GPS_HDOP_int=0, GPS_HDOP_frac=0;          // horizontal precision
-int32_t GPS_Altitude=0;                           // altitude
-int32_t GPS_age_int=0, GPS_age_frac=0;            // information age
+zGPS::zGPS(uint8_t tx, uint8_t rx, uint32_t baud, uint16_t buff_len):gpsSerial(GPS_TX, GPS_RX){
+		// pin atribution
+		GPS_TX = tx;
+		GPS_RX = rx;
+		GPS_ENABLE = ALWAYS_ENABLED;
+		GPS_BAUD_RATE = baud;
+		GPS_BUFF_LEN = buff_len;
+		
+		//SoftwareSerial::gpsSerial(GPS_TX, GPS_RX);         // defines serial(UART) communication with GPS
 
-// PRIVATE VARIABLES
-byte    GPSBuffer[GPS_BUFF_LEN];                  // buffer for NMEA comunication
-size_t  GPSBufferLength=0;                        // stores the length of the GPSBuffer after 'checkGPS'
+}
 
-// NMEA MESSAGE PROCESSING
-int32_t NMEADiv[NMEA_DIV_LEN];                    // position of the GPSBuffer terms
-size_t  NMEADivLen=0;                             // curent number of terms(divisions) in the GPSBuffer. limited by NMEA_SUB_LEN
-char    NMEATalkerID[3];                          // sender of NMEA message
-char    NMEAMnemonic[4];                          // mnemonic for message type
+zGPS::zGPS(uint8_t tx, uint8_t rx, uint8_t en, uint32_t baud, uint16_t buff_len):gpsSerial(GPS_TX, GPS_RX){
+		// pin atribution
+		GPS_TX = tx;
+		GPS_RX = rx;
+		GPS_ENABLE = en;
+		GPS_BAUD_RATE = baud;
+		GPS_BUFF_LEN = buff_len;
+		
+		//SoftwareSerial::gpsSerial(GPS_TX, GPS_RX);         // defines serial(UART) communication with GPS
 
+}
+
+void zGPS::init(){
+	GPS_hour=0, GPS_min=0, GPS_sec=0;         // time
+	GPS_lat_int=0, GPS_lat_frac=0;            // latitude
+	GPS_NS = 'X';                             // north/south
+	GPS_long_int=0, GPS_long_frac=0;          // longitude
+	GPS_EW = 'X';                             // east/west
+	GPS_quality='0';                          // quality
+	GPS_Satellites=0;                         // number of satelites
+	GPS_HDOP_int=0, GPS_HDOP_frac=0;          // horizontal precision
+	GPS_Altitude=0;                           // altitude
+	GPS_age_int=0, GPS_age_frac=0;            // information age
+	
+	GPSBufferLength=0;
+	NMEADivLen=0;
+	
+	GPSBuffer = malloc(GPS_BUFF_LEN*sizeof(byte));
+	
+	pinMode(GPS_ENABLE, OUTPUT);
+	digitalWrite(GPS_ENABLE, HIGH);
+	// TO-DO: protect init
+	gpsSerial.begin(GPS_BAUD_RATE);
+}
+
+uint32_t zGPS::time(){
+	return GPS_hour;
+}
+int32_t zGPS::lat(){
+	return GPS_lat_int;
+}
+int32_t zGPS::lon(){
+	return GPS_long_int;
+}
+		
 // PRIVATE FUNCTIONS
-err_t readStringBuffer(char* str, int32_t st_index, int32_t N){
+err_t zGPS::readStringBuffer(char* str, int32_t st_index, int32_t N){
   // this function stores values from the GPSBuffer in the "str" string
   // reads "N" ascii characters, starting from "st_index"
   if(N < 0)
@@ -38,7 +72,7 @@ err_t readStringBuffer(char* str, int32_t st_index, int32_t N){
   return NO_ERR;
 }
 
-err_t readBufferIndex(int32_t st_index, int32_t end_index, char ignore, int32_t* val_addr){
+err_t zGPS::readBufferIndex(int32_t st_index, int32_t end_index, char ignore, int32_t* val_addr){
   // this function reads a integer value from the buffer and stores it in val_addr
   // each digit of the value read must be coded in ascii format
   // "st_index" is the starting index and "end_index" is the ending index for reading
@@ -70,14 +104,14 @@ err_t readBufferIndex(int32_t st_index, int32_t end_index, char ignore, int32_t*
   return NO_ERR;
 }
 
-void setNMEADiv(char separator){
+void zGPS::setNMEADiv(char separator){
   NMEADivLen = 0;
   for(int32_t i = 0; i < GPSBufferLength; i++)
     if(GPSBuffer[i] == separator)
       NMEADiv[NMEADivLen++] = i;
 }
 
-err_t ProcessGGA(){
+err_t zGPS::ProcessGGA(){
   // Processes a NMEA message with "GGA" Mnemonic and attributes value for corresponding global variables
   // this function is called by "GPS_Process_NMEA_Line"
   // the message must be in the GPSBuffer before this functions calling
@@ -144,7 +178,7 @@ err_t ProcessGGA(){
 }
 
 // USER FUNCTIONS
-err_t GPS_update(){
+err_t zGPS::GPS_update(){
   // Reads a NMEA message from GPS and stores it in GPSBuffer
   int inByte;
   int32_t aux = 0;
@@ -170,9 +204,10 @@ err_t GPS_update(){
       return NO_ERR;
     }
   }
+  return INV_DATA_ERR;
 }
 
-err_t GPS_Process_NMEA_Line(){
+err_t zGPS::GPS_Process_NMEA_Line(){
   // Read NMEA message TalkerId and Mnemonic and process it accordingly
   // the message must be in the GPSBuffer before this functions calling
   //
@@ -197,20 +232,27 @@ err_t GPS_Process_NMEA_Line(){
   return NO_ERR;
 }
 
-err_t GPS_init(){
-  pinMode(GPS_ENABLE, OUTPUT);
-  digitalWrite(GPS_ENABLE, HIGH);
-  // TO-DO: protect init
-  gpsSerial.begin(GPS_BAUD_RATE);
+/**
+err_t zGPS::GPS_init(){
+  
   return NO_ERR;
 }
+*/
 
-err_t GPS_read(){
+err_t zGPS::read(){
   err_t error_value;
   error_value = GPS_update();
-  if(error_value != NO_ERR)
+  if(error_value != NO_ERR){
+		#ifdef DEBUG_MODE
+			Serial.print("Error while updating. Error type: "); Serial.println(error_value, BIN);
+		#endif
     return error_value;
+  }
   error_value = GPS_Process_NMEA_Line();
+	#ifdef DEBUG_MODE
+		if(error_value != NO_ERR)
+			Serial.print("Error while processing. Error type: "); Serial.println(error_value);
+	#endif
   return error_value;
 }
 
