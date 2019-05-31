@@ -1,6 +1,6 @@
 zBMP::zBMP() {
-	BMP_pressure = 0;
-	BMP_temperature = 0;
+	pressure = 0;
+	temperature = 0;
 }
 
 boolean zBMP::init(uint8_t mode) {
@@ -27,19 +27,19 @@ boolean zBMP::init(uint8_t mode) {
   mc = read16(BMP085_CAL_MC);
   md = read16(BMP085_CAL_MD);
 #ifdef DEBUG_BMP
-  Serial.print("ac1 = "); Serial.println(ac1, DEC);
-  Serial.print("ac2 = "); Serial.println(ac2, DEC);
-  Serial.print("ac3 = "); Serial.println(ac3, DEC);
-  Serial.print("ac4 = "); Serial.println(ac4, DEC);
-  Serial.print("ac5 = "); Serial.println(ac5, DEC);
-  Serial.print("ac6 = "); Serial.println(ac6, DEC);
+  Serial.print(F("ac1 = ")); Serial.println(ac1, DEC);
+  Serial.print(F("ac2 = ")); Serial.println(ac2, DEC);
+  Serial.print(F("ac3 = ")); Serial.println(ac3, DEC);
+  Serial.print(F("ac4 = ")); Serial.println(ac4, DEC);
+  Serial.print(F("ac5 = ")); Serial.println(ac5, DEC);
+  Serial.print(F("ac6 = ")); Serial.println(ac6, DEC);
 
-  Serial.print("b1 = "); Serial.println(b1, DEC);
-  Serial.print("b2 = "); Serial.println(b2, DEC);
+  Serial.print(F("b1 = ")); Serial.println(b1, DEC);
+  Serial.print(F("b2 = ")); Serial.println(b2, DEC);
 
-  Serial.print("mb = "); Serial.println(mb, DEC);
-  Serial.print("mc = "); Serial.println(mc, DEC);
-  Serial.print("md = "); Serial.println(md, DEC);
+  Serial.print(F("mb = ")); Serial.println(mb, DEC);
+  Serial.print(F("mc = ")); Serial.println(mc, DEC);
+  Serial.print(F("md = ")); Serial.println(md, DEC);
 #endif
 
   return true;
@@ -49,25 +49,25 @@ void zBMP::read(void){
 	zBMP::readRawTemperature();
 	zBMP::readRawPressure();
 	#ifdef DEBUG_BMP
-		Serial.println(" ");
+		Serial.println(F(" "));
 	#endif
 }
 
 void zBMP::readRawTemperature(void) {
-	uint16_t temperature;
+	uint16_t temp;
 	write8(BMP085_CONTROL, BMP085_READTEMPCMD);
 	delay(5);
 	
-	temperature = read16(BMP085_TEMPDATA);
-	if(temperature && temperature != 0x00FF)
-		BMP_temperature = temperature;
+	temp = read16(BMP085_TEMPDATA);
+	if(temp && temp != 0x00FF)
+		temperature = temp;
 #ifdef DEBUG_BMP
-	Serial.print("Raw temp: "); Serial.println(temperature);
+	Serial.print(F("Raw temp: ")); Serial.println(temperature);
 #endif
 }
 
 void zBMP::readRawPressure(void) {
-	uint32_t pressure;
+	uint32_t pres;
   write8(BMP085_CONTROL, BMP085_READPRESSURECMD + (oversampling << 6));
 
   if (oversampling == BMP085_ULTRALOWPOWER) 
@@ -79,73 +79,20 @@ void zBMP::readRawPressure(void) {
   else 
     delay(26);
 
-  pressure = read16(BMP085_PRESSUREDATA);
+  pres = read16(BMP085_PRESSUREDATA);
 
-  pressure <<= 8;
-  pressure |= read8(BMP085_PRESSUREDATA+2);
-  pressure >>= (8 - oversampling);
+  pres <<= 8;
+  pres |= read8(BMP085_PRESSUREDATA+2);
+  pres >>= (8 - oversampling);
 
-	if(pressure && pressure != 0x00FFFFFF)
-		BMP_pressure = pressure;
+	if(pres && pres != 0x00FFFFFF)
+		pressure = pres;
 #ifdef DEBUG_BMP
-  Serial.print("Raw pressure: "); Serial.println(pressure);
+  Serial.print(F("Raw pressure: ")); Serial.println(pressure);
 #endif
 
 }
 
-// getters for data
-uint16_t zBMP::raw_temperature(void){
-	return BMP_temperature;
-}
-
-uint32_t zBMP::raw_pressure(void){
-	return BMP_pressure;
-}
-
-// getters for calibration data
-int16_t zBMP::get_ac1(void){
-	return ac1;
-}
-
-int16_t zBMP::get_ac2(void){
-	return ac2;
-}
-
-int16_t zBMP::get_ac3(void){
-	return ac3;
-}
-
-uint16_t zBMP::get_ac4(void){
-	return ac4;
-}
-
-uint16_t zBMP::get_ac5(void){
-	return ac5;
-}
-
-uint16_t zBMP::get_ac6(void){
-	return ac6;
-}
-
-int16_t zBMP::get_b1(void){
-	return b1;
-}
-
-int16_t zBMP::get_b2(void){
-	return b2;
-}
-
-int16_t zBMP::get_mb(void){
-	return mb;
-}
-
-int16_t zBMP::get_mc(void){
-	return mc;
-}
-
-int16_t zBMP::get_md(void){
-	return md;
-}
 /********************************************************************/
 
 int32_t zBMP::computeB5(int32_t UT) {

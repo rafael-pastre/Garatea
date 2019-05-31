@@ -14,13 +14,13 @@ int32_t swap_bytes (int32_t v){
 }
 
 void swap_bytes (void* str, size_t sz){
-	// Example: int32_t in  = b3,b2,b1,b0 -> int32_t out = b0,b1,b2,b3
-	uint8_t b;
-	for(size_t i = 0; i < sz/2; i++){
+  // Example: int32_t in  = b3,b2,b1,b0 -> int32_t out = b0,b1,b2,b3
+  uint8_t b;
+  for(size_t i = 0; i < sz/2; i++){
         b = *((uint8_t*)(str+sz-i-1));
         *((uint8_t*)(str+sz-i-1)) = *((uint8_t*)(str+i));
-		*((uint8_t*)(str+i)) = b;
-	}
+    *((uint8_t*)(str+i)) = b;
+  }
 }
 
 int32_t findStrIndex(byte* str, int32_t st_index, int32_t end_index, char c){
@@ -35,6 +35,12 @@ int32_t findStrIndex(byte* str, int32_t st_index, int32_t end_index, char c){
   return -1;
 }
 
+int32_t absolute(int32_t x){
+  if(x < 0)
+    return -x;
+  else
+    return x;
+}
 // DEBUG
 void printString(byte* str, int len){
   for(int i = 0; i < len; i++)

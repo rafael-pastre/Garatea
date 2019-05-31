@@ -71,6 +71,7 @@ void CheckGPS()
       GPSBufferLength = 0;
     }
   }
+  //Serial.println("GPS unnavaliable");
 }
 
 void GPS_print_Info(){

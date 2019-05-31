@@ -1,10 +1,5 @@
 #include "zstdlib.h"
 
-// I2C COMMUNICATION
-
-
-
-
 // GENERAL
 int32_t swap_bytes (int32_t v){
   // Swaps the order of bytes in a int32_t variable:
@@ -40,6 +35,13 @@ int32_t findStrIndex(byte* str, int32_t st_index, int32_t end_index, char c){
       return i;
   
   return -1;
+}
+
+int32_t absolute(int32_t x){
+  if(x < 0)
+    return -x;
+  else
+    return x;
 }
 
 // DEBUG

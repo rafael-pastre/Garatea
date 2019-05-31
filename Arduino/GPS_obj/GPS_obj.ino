@@ -1,6 +1,6 @@
 #include "zGPS.h"
 
-zGPS gps1(10, 11, 12, 9600, 82);
+zGPS gps1(10, 11, 12, 9600, 150);
 
 void setup() {
   #ifdef DEBUG_MODE
@@ -17,5 +17,5 @@ void loop() {
   Serial.print("Lat: ");Serial.println(gps1.lat());
   Serial.print("Lon: ");Serial.println(gps1.lon());
   
-  delay(2000);
+  delay(200);
 }

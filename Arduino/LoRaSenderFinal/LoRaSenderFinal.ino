@@ -2,7 +2,7 @@
 #include <LoRa.h>
 
 #define ss 7    //13
-#define rst 9  //25
+#define rst -1  //25
 #define dio0 2   //4
 
 int counter = 0;
@@ -19,7 +19,10 @@ void setup() {
     Serial.println("Starting LoRa failed!");
     while (1);
   }
-  LoRa.setSyncWord(0x08);
+  LoRa.setTxPower(20, 1);
+  LoRa.setSignalBandwidth(125E3);
+  LoRa.setSpreadingFactor(11);
+  LoRa.enableCrc();
 }
 
 void loop() {
@@ -30,9 +33,11 @@ void loop() {
   LoRa.beginPacket();
   LoRa.print("hello ");
   LoRa.print(counter);
+  LoRa.print("\n");
+  LoRa.print("LF working");
   LoRa.endPacket();
 
   counter++;
 
-  delay(500);
+  delay(1500);
 }

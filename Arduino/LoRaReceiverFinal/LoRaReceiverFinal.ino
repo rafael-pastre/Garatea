@@ -2,7 +2,7 @@
 #include <LoRa.h>
 
 #define ss 7    //13
-#define rst 25
+#define rst -1
 #define dio0 2   //4
 
 void setup() {
@@ -12,13 +12,16 @@ void setup() {
   Serial.println("LoRa Receiver");
 
   LoRa.setPins(ss, rst, dio0);
-  LoRa.receive();
 
   if (!LoRa.begin(433.123E6)) {
     Serial.println("Starting LoRa failed!");
     while (1);
   }
-  LoRa.setSyncWord(0x08);
+  //LoRa.setSyncWord(0x08);
+  LoRa.setSignalBandwidth(125E3);
+  LoRa.setSpreadingFactor(11); 
+  LoRa.enableCrc();
+  LoRa.receive();
 }
 
 void loop() {

@@ -3,14 +3,22 @@
 
 #include <Wire.h>                                 // I2C Library
 #include <SoftwareSerial.h>                       // UART Library
+#include <SPI.h>                                  // SPI Library
+#include <LoRa.h>                                 // LoRa Library
+#include <SD.h>                                   // SD Library
+#include <avr/wdt.h>                              // WatchDogTimer Library
+
 #include <stdlib.h>
 
 // DEBUG OPTIONS
 #define DEBUG_MODE
 #define DEBUG_MODE_HIGH
-#define DEBUG_BAUD 	115200
-#define DEBUG_DELAY	5000
+#define DEBUG_BAUD   115200
+#define DEBUG_DELAY 5000
 
+//#ifdef DEBUG_MODE
+//#define DEBUG_MODE_HIGH
+//#endif
 // ERROR HANDLING (may be deprecated with Object Orientation)
 typedef uint8_t         err_t;                    // definition of type used for error handling
 #define NO_ERR          0                         // sucessful execution
@@ -20,9 +28,15 @@ typedef uint8_t         err_t;                    // definition of type used for
 #define TRANSMISS_ERR   4                         // transmission error
 #define INIT_ERR        5                         // initialization error
 
+
 // TRASMISSION STATE IDs
 // transmissionState defines what information the slave will send to master
 // must set transmissionState before every read call on the slave
+#define BMP_CAL_TSID    1                         // transmissionState value for sending BMP calibration data to master
+#define BMP_DATA_TSID   2                         // transmissionState value for sending BMP calibration data to master
+#define GPS1_DATA_TSID  3
+#define GPS2_DATA_TSID  4
+/*
 #define BMP_PRES_TSID   0                         // transmissionState value for sending BMP raw pression to master
 #define BMP_TEMP_TSID   1                         // transmissionState value for sending BMP raw temperature to master
 #define BMP_CAL_TSID    2                         // transmissionState value for sending BMP calibration data to master
@@ -36,12 +50,13 @@ typedef uint8_t         err_t;                    // definition of type used for
 #define GPS_SAT_TSID    9                         // transmissionState value for sending GPS satellites number to master
 #define GPS_HDOP_TSID   10                        // transmissionState value for sending GPS horizontal precision to master
 #define GPS_AGE_TSID    11                        // transmissionState value for sending GPS information age to master
-
+*/
 
 //int32_t i2c_read_int32();
 int32_t swap_bytes (int32_t v);
 void swap_bytes (void* str, size_t sz);
 int32_t findStrIndex(byte* str, int32_t st_index, int32_t end_index, char c);
+int32_t absolute(int32_t x);
 
 #ifdef DEBUG_MODE
 void printString(byte* str, int len);

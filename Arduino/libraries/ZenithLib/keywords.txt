@@ -6,7 +6,8 @@
 # Datatypes (KEYWORD1)
 #######################################
 
-Test	KEYWORD1
+zBMP	KEYWORD1
+zGPS	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)

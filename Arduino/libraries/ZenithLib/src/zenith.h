@@ -2,11 +2,11 @@
 #define ZENITH_H
 
 //#include "zdebug.h"
-#include "zstdlib.h"
+//#include "zstdlib.h"
 
 #include "zBMP.h"                                 // BMP Library
-#include "zBMPdata.h"
 #include "zGPS.h"                                 // GPS Library
+#include "zPACKET.h"
 
 #ifdef PROJ_LORA
 #include "zLoRa.h"                                // LoRa Library
