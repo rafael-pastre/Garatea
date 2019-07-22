@@ -1,23 +1,29 @@
 #include <SPI.h>
 #include <LoRa.h>
 
-#define ss 7    //13
-#define rst -1
-#define dio0 2   //4
+#define LORA_CS_PIN 7
+#define LORA_RST_PIN -1
+#define LORA_DIO0_PIN 2
+
+#define CONSOLE_MODE
 
 void setup() {
   Serial.begin(115200);
   while (!Serial);
 
+  #ifdef CONSOLE_MODE
   Serial.println("LoRa Receiver");
-
-  LoRa.setPins(ss, rst, dio0);
+  #endif
+  
+  LoRa.setPins(LORA_CS_PIN, LORA_RST_PIN, LORA_DIO0_PIN);
 
   if (!LoRa.begin(433.123E6)) {
+    #ifdef CONSOLE_MODE
     Serial.println("Starting LoRa failed!");
+    #endif
     while (1);
   }
-  //LoRa.setSyncWord(0x08);
+  
   LoRa.setSignalBandwidth(125E3);
   LoRa.setSpreadingFactor(11); 
   LoRa.enableCrc();
@@ -28,16 +34,21 @@ void loop() {
   // try to parse packet
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
-    // received a packet
-    Serial.print("Received packet '");
-
+    #ifdef CONSOLE_MODE
+    Serial.println("Recieved LoRa Packet:");
+    #endif
     // read packet
     while (LoRa.available()) {
       Serial.print((char)LoRa.read());
     }
 
+    #ifdef CONSOLE_MODE
+    Serial.print("RSSI = ");
+    #endif
     // print RSSI of packet
-    Serial.print("' with RSSI ");
     Serial.println(LoRa.packetRssi());
+    #ifdef CONSOLE_MODE
+    Serial.println();
+    #endif
   }
 }
